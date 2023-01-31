@@ -1,0 +1,36 @@
+{% extends "base.html.twig" %}
+
+{% block title %}{% trans %}Login{% endtrans %}{% endblock %}
+
+{% block bodyClass %}user user--login{% endblock %}
+{% block mainClass %}{% endblock %}
+
+{% block body %}
+    <form id="user_login" name="login" method="post">
+        <input id="user_login__csrf_token" type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}" />
+        <input id="user_login__target_path" type="hidden" name="_target_path" value="{{ targetUrl|default('') }}" />
+
+        {% if error is not empty %}
+            <div>{{ error.messageKey|trans(error.messageData, "security") }}</div>
+        {% endif %}
+
+        <div>
+            <input id="user_login__username" type="text" name="_username" placeholder="{% trans %}Username{% endtrans %}" value="{{ lastUsername|default('') }}" required autofocus />
+            <label for="user_login__username">{% trans %}Username{% endtrans %}</label>
+        </div>
+
+        <div>
+            <input id="user_login__password" type="password" name="_password" placeholder="{% trans %}Password{% endtrans %}" required />
+            <label for="user_login__password">{% trans %}Password{% endtrans %}</label>
+        </div>
+
+        <div>
+            <input id="user_login__remember_me" type="checkbox" name="_remember_me" placeholder="{% trans %}Remember me{% endtrans %}" value="1" />
+            <label for="user_login__remember_me">{% trans %}Remember me{% endtrans %}</label>
+        </div>
+
+        <div>
+            <button id="user_login_submit" type="submit" name="submit">{% trans %}Authenticate{% endtrans %}</button>
+        </div>
+    </form>
+{% endblock %}

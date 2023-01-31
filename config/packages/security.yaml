@@ -1,38 +1,76 @@
 security:
-    # https://symfony.com/doc/current/security.html#registering-the-user-hashing-passwords
+    session_fixation_strategy: migrate
     password_hashers:
-        Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface: 'auto'
-    # https://symfony.com/doc/current/security.html#loading-the-user-the-user-provider
+        Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface:
+            algorithm: auto
+            cost: 16
+            time_cost: 4
+            memory_cost: 1024
+        App\Entity\User:
+            algorithm: auto
+            cost: 16
+            time_cost: 4
+            memory_cost: 1024
     providers:
         users_in_memory: { memory: null }
+        database:
+            entity:
+                class: App\Entity\User
+                property: username
     firewalls:
         dev:
-            pattern: ^/(_(profiler|wdt)|css|images|js)/
+            pattern: ^/(_(profiler|wdt))/
+            security: false
+        public:
+            pattern: ^/(build|bundles|media|translations)/
             security: false
         main:
+            pattern: ^/
             lazy: true
-            provider: users_in_memory
-
-            # activate different ways to authenticate
-            # https://symfony.com/doc/current/security.html#the-firewall
-
-            # https://symfony.com/doc/current/security/impersonating_user.html
-            # switch_user: true
-
-    # Easy way to control access for large sections of your site
-    # Note: Only the *first* access control that matches will be used
+            provider: database
+            entry_point: App\Security\AppAuthenticator
+            custom_authenticators:
+                - App\Security\AppAuthenticator
+            logout:
+                path: user_logout
+                target: home_index
+                invalidate_session: true
+            form_login:
+                login_path: user_login
+                check_path: user_login_check
+                default_target_path: user_account
+                use_forward: false
+                use_referer: false
+                enable_csrf: true
+            # json_login:
+            #     check_path: api_login
+            http_basic:
+                realm: Secured Area
+            remember_me:
+                secret: '%env(APP_SECRET)%'
+                lifetime: 604800 # 1 week
+            switch_user: true
+    role_hierarchy:
+        ROLE_ADMIN:         [ROLE_USER]
+        ROLE_SUPER_ADMIN:   [ROLE_ADMIN, ROLE_ALLOWED_TO_SWITCH]
     access_control:
-        # - { path: ^/admin, roles: ROLE_ADMIN }
-        # - { path: ^/profile, roles: ROLE_USER }
+        - { path: "^/([a-z]{2}\/)?admin",                   requires_channel: https,    roles: [IS_AUTHENTICATED_FULLY, ROLE_ADMIN  ] }
+        - { path: "^/([a-z]{2}\/)?account/login$",          requires_channel: https,    roles: [PUBLIC_ACCESS                       ] }
+        - { path: "^/([a-z]{2}\/)?account/login/check$",    requires_channel: https,    roles: [PUBLIC_ACCESS                       ] }
+        - { path: "^/([a-z]{2}\/)?account/recover$",        requires_channel: https,    roles: [PUBLIC_ACCESS                       ] }
+        - { path: "^/([a-z]{2}\/)?account/reset-password$", requires_channel: https,    roles: [PUBLIC_ACCESS                       ] }
+        - { path: "^/([a-z]{2}\/)?account",                 requires_channel: https,    roles: [IS_AUTHENTICATED_FULLY              ] }
+        - { path: "^/([a-z]{2}\/)?",                        requires_channel: https,    roles: [PUBLIC_ACCESS                       ] }
 
 when@test:
     security:
         password_hashers:
-            # By default, password hashers are resource intensive and take time. This is
-            # important to generate secure password hashes. In tests however, secure hashes
-            # are not important, waste resources and increase test times. The following
-            # reduces the work factor to the lowest possible values.
             Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface:
+                algorithm: auto
+                cost: 4 # Lowest possible value for bcrypt
+                time_cost: 3 # Lowest possible value for argon
+                memory_cost: 10 # Lowest possible value for argon
+            App\Entity\User:
                 algorithm: auto
                 cost: 4 # Lowest possible value for bcrypt
                 time_cost: 3 # Lowest possible value for argon
