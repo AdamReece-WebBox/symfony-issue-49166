@@ -1,0 +1,24 @@
+{
+	"folders": [
+		{
+			"path": "."
+		}
+	],
+	"settings": {
+		"files.eol": "\n",
+		"files.trimTrailingWhitespace": true,
+		"html.format.endWithNewline": true
+	},
+	"extensions": {
+		"recommendations": [
+			"bmewburn.vscode-intelephense-client",
+			"ikappas.composer",
+			"junstyle.twig-language",
+			"mrmlnc.vscode-apache",
+			"neilbrayfield.php-docblocker",
+			"redhat.vscode-yaml",
+			"swordev.phpstan",
+			"whatwedo.twig"
+		]
+	}
+}
